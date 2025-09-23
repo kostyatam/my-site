@@ -24,8 +24,8 @@ export default function Home() {
           </p>
           <p className="first:text-lg first:leading-tight first:font-bold first:mb-0 text-lg/6 mb-4">
             I enjoy building web applications and design systems using
-            Typescript, React, Redux (Zustand) and Next.js (off course vanilla
-            JS too;).
+            Typescript, React, Redux (Zustand) and Next.js (of course vanilla JS
+            too;).
           </p>
         </header>
         <section className="flex flex-col gap-3 grow">
