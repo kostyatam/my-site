@@ -1,5 +1,13 @@
 export const experiences = [
   {
+    id: "funnelfox",
+    name: "FunnelFox",
+    years: {
+      begin: "2025",
+    },
+    position: "Senior Frontend Developer",
+  },
+  {
     id: "replika",
     name: "Replika",
     years: {

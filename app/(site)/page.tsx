@@ -42,7 +42,7 @@ export default function Home() {
               <div className="flex justify-between text-[.85rem]/6">
                 <p>{experience.position}</p>
                 <p>
-                  {experience.years.begin} - {experience.years.end.slice(-2)}'
+                  {experience.years.begin} - {experience.years.end ? experience.years.end?.slice(-2) + "'" : 'current'}
                 </p>
               </div>
             </li>
