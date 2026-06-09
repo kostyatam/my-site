@@ -34,3 +34,54 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## CI: Build and push Docker images to GHCR
+
+On pushes to `main`, GitHub Actions builds two images from the multi-stage `Dockerfile` and publishes them to GitHub Container Registry (GHCR):
+- `ghcr.io/<owner>/<repo>-app:latest`
+- `ghcr.io/<owner>/<repo>-nginx:latest`
+
+You can see and adjust the workflow in `.github/workflows/ghcr.yml`.
+
+## Auto-deploy on VPS with Watchtower
+
+Run [Containrrr/Watchtower](https://containrrr.dev/watchtower/) on your VPS to auto-pull and restart containers when new `:latest` images are published.
+
+1. Log in to GHCR on your VPS (public repo works anonymously, private requires auth):
+
+```bash
+echo $GHCR_TOKEN | docker login ghcr.io -u <github-username> --password-stdin
+```
+
+2. Start your stack using the GHCR images (example):
+
+```bash
+docker run -d --name mysite-app \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  ghcr.io/<owner>/<repo>-app:latest
+
+docker run -d --name mysite-nginx \
+  --restart unless-stopped \
+  -p 80:80 \
+  --link mysite-app:app \
+  ghcr.io/<owner>/<repo>-nginx:latest
+```
+
+3. Run Watchtower to monitor and update these containers:
+
+```bash
+docker run -d \
+  --name watchtower \
+  --restart unless-stopped \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -e WATCHTOWER_CLEANUP=true \
+  -e WATCHTOWER_POLL_INTERVAL=300 \
+  -e WATCHTOWER_INCLUDE_RESTARTING=true \
+  containrrr/watchtower \
+  mysite-app mysite-nginx
+```
+
+Notes:
+- For private packages, create a classic PAT with `read:packages` and set `GHCR_TOKEN` env var on your VPS before login.
+- Watchtower updates tagged `:latest` (and also immutable `:sha-<commit>` if you use those); ensure your containers use tags you publish.
